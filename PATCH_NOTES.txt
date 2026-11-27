@@ -1,0 +1,80 @@
+AutoPvP / ApexCombat source revision notes
+========================================
+
+Base project
+------------
+The structured project ZIP was used as the source of truth because it contains the
+full Gradle project and wrapper. Its Java source matched the source-only ZIP byte
+for byte before edits. The uploaded JAR was inspected as the prior compiled artifact;
+its metadata identifies Fabric client mod AutoPvP for Minecraft 1.21.11 and Java 21.
+
+Changes in this revision
+------------------------
+- Preserved the existing single-class Fabric client architecture, K toggle, existing
+  commands, friend protection, retaliation/all target modes, targeting, aim smoothing,
+  water clutch, shield/totem logic, food/buff maintenance and Mending XP behavior.
+- Added `/autopvp profile` and included the detected kit in `/autopvp status`.
+- Added heuristic inventory/equipment kit profiles for NethPot, Diamond Pot, NoDebuff,
+  Debuff, UHC, Crystal, Anchor, custom Mole trap inventory, Mace, Wind-Charge Mace,
+  Pearl-Mace, Elytra-Mace, Spear-Mace, Elytra-Spear-Mace, Spear, Trident, Tank, SMP,
+  Sword, Pearl Fight, Elytra, Gapple, Soup, Bow, Crossbow, TNT Minecart and Fireball.
+- Added a retreat-first healing task. At five hearts or below it retreats to the
+  configured distance, self-splashes a healing potion when available, then eats a
+  golden apple when configured and available. Combat stays paused throughout the task.
+- Healing thresholds now use actual health, not health plus absorption, so absorption
+  hearts do not hide critical low health.
+- Regular golden apples are preferred over enchanted golden apples to conserve the
+  enchanted variant.
+- Updated default mace policy: do not use mace as a regular ground weapon without a
+  Wind Charge setup. Old configs without a schema version are migrated to this safer
+  default once.
+- Added conservative UHC/Mole cobweb placement where the target feet cell is empty and
+  the floor is solid.
+- Added conditional Crystal placement/detonation on a valid nearby obsidian/bedrock
+  base. Detonation requires a visible normal melee hit and either an offhand totem or
+  a substantial health buffer because crystal explosions can damage the local player.
+- Added material-variant spear detection and spear selection/spacing for Spear and
+  mixed Spear-Mace profiles.
+- Prevented a just-completed task (especially healing) from being followed by a combat
+  attack on the same client tick.
+- Added configuration values for automatic kit detection, retreat distance, gapple
+  after splash healing and grounded Crystal/Anchor movement.
+
+Important limitations
+---------------------
+- Kit identification is heuristic and sees the local player's inventory/equipment,
+  not hidden server kit metadata or another player's private inventory. Custom servers
+  may need their own item signatures or manual profile setting.
+- Full Anchor charging/activation, complete Crystal web/anchor combos, Mole lever-face
+  traps, lava/water bucket denial, pearl-catch timing, pearl+wind-charge sequencing,
+  full Elytra rocket/chestplate transitions, spear charge-stage/Lunge automation,
+  projectile aim automation and objective-mode pathfinding are not implemented as
+  complete autonomous systems in this revision.
+- Spear profiles detect material variants and select/space with the weapon; this is not
+  a claim of a fully automated jab/charge/Lunge combo. Spear Lunge timing and server
+  mechanics still require in-game verification.
+- No complete multi-level navigation/pathfinding system exists. Complicated terrain,
+  holes, doors and custom arena mechanics can still confuse movement.
+- Some server rules/plugins alter item interactions. Validate the profile on the target
+  server or a private test world before relying on it.
+
+Validation performed
+--------------------
+- Original JAR, both uploaded ZIP archives and their ZIP member integrity were checked.
+- `fabric.mod.json` and the language JSON parse successfully.
+- Java parser-oriented `javac` pass reported zero syntax-level diagnostics. The pass
+  cannot type-check because the Fabric/Minecraft/Gson/Brigadier dependencies were not
+  available on this machine.
+- A real Gradle build was attempted, but the Gradle 9.8.2 wrapper distribution could
+  not be downloaded because network/DNS resolution for services.gradle.org was
+  unavailable. Therefore this revision is NOT reported as a successful compile and
+  has NOT been tested in-game. Build it with JDK 21 using `gradlew.bat build` on Windows.
+
+Build command
+-------------
+Windows: `gradlew.bat build`
+Linux/macOS: `./gradlew build`
+Expected output: `build/libs/autopvp-1.0.0.jar` (plus a sources JAR).
+
+This archive contains source/project files only. No replacement compiled JAR is
+included; the user intends to build the JAR locally or through GitHub Actions.
